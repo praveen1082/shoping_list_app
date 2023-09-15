@@ -23,7 +23,7 @@ class _NewItemState extends State<NewItem> {
   void _saveItem() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      
+
       final url = Uri.https(
           'flutterprac-712ab-default-rtdb.asia-southeast1.firebasedatabase.app',
           'shopping-list.json');
