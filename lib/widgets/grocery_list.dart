@@ -27,12 +27,21 @@ class _GroceryListState extends State<GroceryList> {
     final url = Uri.https(
         'flutterprac-712ab-default-rtdb.asia-southeast1.firebasedatabase.app',
         'shopping-list.json');
-    final response = await http.get(url);
+
+    try{
+      final response = await http.get(url);
 
     if (response.statusCode >= 400) {
       setState(() {
         _error = 'Failed to fetch data. Please try again later';
       });
+    }
+
+    if (response.body == 'null') {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
     }
 
     final Map<String, dynamic> listData = json.decode(response.body);
@@ -55,6 +64,10 @@ class _GroceryListState extends State<GroceryList> {
       _groceryItems = loadedItems;
       _isLoading = false;
     });
+    }catch(error){}
+      setState(() {
+        _error = 'Something went wrong. Please try again later!';
+      });
   }
 
   void _addItem() async {
@@ -73,14 +86,23 @@ class _GroceryListState extends State<GroceryList> {
     });
   }
 
-  void _removeItem(GroceryItem item) {
-    final url = Uri.https(
-        'flutterprac-712ab-default-rtdb.asia-southeast1.firebasedatabase.app',
-        'shopping-list/${item.id}.json');
-    http.delete(url);
+  void _removeItem(GroceryItem item) async {
+    final index = _groceryItems.indexOf(item);
     setState(() {
       _groceryItems.remove(item);
     });
+    final url = Uri.https(
+        'flutterprac-712ab-default-rtdb.asia-southeast1.firebasedatabase.app',
+        'shopping-list/${item.id}.json');
+
+    final response = await http.delete(url);
+
+    if (response.statusCode >= 400) {
+      _error = 'Due to some problem. Deletion failed, Please try again later!';
+      setState(() {
+        _groceryItems.insert(index, item);
+      });
+    }
   }
 
   @override
